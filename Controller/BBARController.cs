@@ -1,0 +1,160 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using IBM.Data.DB2.Core;
+using System.Data;
+using System.Configuration;
+using Basic;
+using SQLUI;
+using Oracle.ManagedDataAccess.Client;
+using System.Text.Json.Serialization;
+
+using HIS_DB_Lib;
+namespace DB2VM
+{
+    [Route("dbvm/[controller]")]
+    [ApiController]
+    public class BBARController : ControllerBase
+    {
+        private class BBAR_OPD_Class
+        {
+            [JsonPropertyName("KEY")]
+            public string PRI_KEY { get; set; }
+            [JsonPropertyName("BARCODE")]
+            public string 藥袋條碼 { get; set; }
+            [JsonPropertyName("MEDCODE")]
+            public string 藥品碼 { get; set; }
+            [JsonPropertyName("MEDNAME")]
+            public string 藥品名稱 { get; set; }
+            [JsonPropertyName("PROCDTTM")]
+            public string 開方日期 { get; set; }
+            [JsonPropertyName("PATCODE")]
+            public string 病歷號 { get; set; }
+            [JsonPropertyName("PATNAME")]
+            public string 病人姓名 { get; set; }
+            [JsonPropertyName("BRYPE")]
+            public string 藥局代碼 { get; set; }
+            [JsonPropertyName("BRYPR")]
+            public string 藥袋類型 { get; set; }
+            [JsonPropertyName("DOS")]
+            public string 批序 { get; set; }
+            [JsonPropertyName("VALUE")]
+            public string 交易量 { get; set; }
+            [JsonPropertyName("SD")]
+            public string 單次劑量 { get; set; }
+            [JsonPropertyName("DUNIT")]
+            public string 劑量單位 { get; set; }
+            [JsonPropertyName("RROUTE")]
+            public string 途徑 { get; set; }
+            [JsonPropertyName("FREQ")]
+            public string 頻次 { get; set; }
+            [JsonPropertyName("NOTE")]
+            public string 備註 { get; set; }
+            [JsonPropertyName("CTYPE")]
+            public string 費用別 { get; set; }
+            [JsonPropertyName("WARD")]
+            public string 病房 { get; set; }
+            [JsonPropertyName("BEDNO")]
+            public string 床號 { get; set; }
+            [JsonPropertyName("ORDERSTART")]
+            public string 醫囑開始時間 { get; set; }
+            [JsonPropertyName("ORDEREND")]
+            public string 結方日期 { get; set; }
+        }
+        static string MySQL_server = $"{ConfigurationManager.AppSettings["MySQL_server"]}";
+        static string MySQL_database = $"{ConfigurationManager.AppSettings["MySQL_database"]}";
+        static string MySQL_userid = $"{ConfigurationManager.AppSettings["MySQL_user"]}";
+        static string MySQL_password = $"{ConfigurationManager.AppSettings["MySQL_password"]}";
+        static string MySQL_port = $"{ConfigurationManager.AppSettings["MySQL_port"]}";
+
+        [Route("OPD/{BarCode}")]
+        [HttpGet]
+        public string Get(string? BarCode)
+        {
+            returnData returnData = new returnData();
+            returnData.Method = "OPD/{BarCode}";
+            if (BarCode.StringIsEmpty())
+            {
+                returnData.Code = -200;
+                returnData.Result = "條碼空白!";
+                return returnData.JsonSerializationt();
+            }
+            try
+            {
+                SQLControl sQLControl_醫囑資料 = new SQLControl(MySQL_server, MySQL_database, "order_list", MySQL_userid, MySQL_password, (uint)MySQL_port.StringToInt32(), MySql.Data.MySqlClient.MySqlSslMode.None);
+                string URL = "";
+                string URL_startup = BarCode.Substring(0,1);
+                if(URL_startup == "O" || URL_startup == "E") URL = $"http://10.125.254.212/MedDataAPI/api/GetOpdMed?BARCODE={BarCode}";
+                else URL = $"http://10.125.254.212/MedDataAPI/api/GetIpdMed?BARCODE={BarCode}";
+                string json = Net.WEBApiGet(URL);
+                List<BBAR_OPD_Class> bBAR_OPD_Classes = json.JsonDeserializet<List<BBAR_OPD_Class>>();
+                List<object[]> list_value = bBAR_OPD_Classes.ClassToSQL<BBAR_OPD_Class, enum_醫囑資料>();
+
+
+                List<object[]> list_醫囑資料 = sQLControl_醫囑資料.GetRowsByDefult(null, (int)enum_醫囑資料.藥袋條碼, BarCode);
+                List<object[]> list_醫囑資料_buf = new List<object[]>();
+                List<object[]> list_醫囑資料_add = new List<object[]>();
+                List<object[]> list_醫囑資料_replace = new List<object[]>();
+                for (int i = 0; i < list_value.Count; i++)
+                {
+                    string 藥品碼 = list_value[i][(int)enum_醫囑資料.藥品碼].ObjectToString();
+                    string 頻次 = list_value[i][(int)enum_醫囑資料.頻次].ObjectToString();
+                    string 開方日期 = list_value[i][(int)enum_醫囑資料.開方日期].ObjectToString();
+                    string str_交易量 = list_value[i][(int)enum_醫囑資料.交易量].ObjectToString();
+
+                    string PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}-{i}";
+                    double temp0 = -1;
+                    if (double.TryParse(str_交易量, out temp0) == false) continue;
+
+                    int 交易量 = (int)Math.Ceiling(temp0) * -1;
+                    list_value[i][(int)enum_醫囑資料.產出時間] = DateTime.Now.ToDateTimeString();
+                    list_value[i][(int)enum_醫囑資料.過帳時間] = DateTime.MinValue.ToDateTimeString();
+                    list_醫囑資料_buf = (from temp in list_醫囑資料
+                                     where temp[(int)enum_醫囑資料.PRI_KEY].ObjectToString() == PRI_KEY
+                                     select temp).ToList();
+                    if (list_醫囑資料_buf.Count == 0)
+                    {
+                        list_value[i][(int)enum_醫囑資料.GUID] = Guid.NewGuid().ToString();
+                        if (list_value[i][(int)enum_醫囑資料.結方日期].ToDateTimeString().StringIsEmpty()) list_value[i][(int)enum_醫囑資料.結方日期] = DateTime.Now.ToDateTimeString();
+                        list_value[i][(int)enum_醫囑資料.狀態] = enum_醫囑資料_狀態.未過帳.GetEnumName();
+                        list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
+                        list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
+                        list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
+                        list_醫囑資料_add.Add(list_value[i]);
+                    }
+                    else
+                    {
+                        list_value[i][(int)enum_醫囑資料.GUID] = list_醫囑資料_buf[0][(int)enum_醫囑資料.GUID].ObjectToString();
+                        if (list_value[i][(int)enum_醫囑資料.結方日期].ToDateTimeString().StringIsEmpty()) list_value[i][(int)enum_醫囑資料.結方日期] = DateTime.Now.ToDateTimeString();
+
+                        list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
+                        list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
+
+                        list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
+                        if (list_value[i][(int)enum_醫囑資料.狀態].ObjectToString().StringIsEmpty()) list_value[i][(int)enum_醫囑資料.狀態] = enum_醫囑資料_狀態.未過帳.GetEnumName();
+                        else list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
+                        list_醫囑資料_replace.Add(list_value[i]);
+                    }
+                }
+                List<OrderClass> orderClasses = list_value.SQLToClass<OrderClass, enum_醫囑資料>();
+                if (list_醫囑資料_add.Count > 0) sQLControl_醫囑資料.AddRows(null, list_醫囑資料_add);
+                if (list_醫囑資料_replace.Count > 0) sQLControl_醫囑資料.UpdateByDefulteExtra(null, list_醫囑資料_replace);
+                returnData.Code = 200;
+                returnData.Result = $"條碼掃描成功! 新增<{list_醫囑資料_add.Count }>筆 修改<{list_醫囑資料_replace.Count}>筆";
+                returnData.Data = orderClasses;
+                return returnData.JsonSerializationt(true);
+            }
+            catch(Exception e)
+            {
+                returnData.Code = -200;
+                returnData.Result = e.Message;
+                return returnData.JsonSerializationt();
+            }
+          
+
+        }
+    }
+}
