@@ -70,7 +70,7 @@ namespace DB2VM
         static string MySQL_password = $"{ConfigurationManager.AppSettings["MySQL_password"]}";
         static string MySQL_port = $"{ConfigurationManager.AppSettings["MySQL_port"]}";
 
-        [Route("OPD/{BarCode}")]
+        [Route("{BarCode}")]
         [HttpGet]
         public string Get(string? BarCode)
         {
@@ -134,8 +134,7 @@ namespace DB2VM
                         list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
 
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
-                        if (list_value[i][(int)enum_醫囑資料.狀態].ObjectToString().StringIsEmpty()) list_value[i][(int)enum_醫囑資料.狀態] = enum_醫囑資料_狀態.未過帳.GetEnumName();
-                        else list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
+                        list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
                         list_醫囑資料_replace.Add(list_value[i]);
                     }
                 }

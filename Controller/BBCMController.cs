@@ -61,7 +61,7 @@ namespace DB2VM.Controller
         }
         private enum enum_STATUS : int
         {
-            常備,
+            常備 = 1,
             暫時缺藥,
             已取消,
             停用中,
