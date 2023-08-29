@@ -120,8 +120,8 @@ namespace DB2VM.Controller
                 list_value_buf = list_value.GetRows((int)enum_雲端藥檔.藥品碼, 藥品碼);
 
                 object[] value = new object[new enum_雲端藥檔().GetLength()];
-           
-                value[(int)enum_雲端藥檔.藥品碼] = bBCMClasses[i].藥品碼;
+                if (list_value_buf.Count > 0) value = list_value_buf[0];
+                 value[(int)enum_雲端藥檔.藥品碼] = bBCMClasses[i].藥品碼;
                 value[(int)enum_雲端藥檔.料號] = bBCMClasses[i].扣庫代碼;
                 value[(int)enum_雲端藥檔.藥品學名] = bBCMClasses[i].藥品學名;
                 value[(int)enum_雲端藥檔.中文名稱] = bBCMClasses[i].藥品學名;

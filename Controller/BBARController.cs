@@ -139,8 +139,12 @@ namespace DB2VM
                     }
                 }
                 List<OrderClass> orderClasses = list_value.SQLToClass<OrderClass, enum_醫囑資料>();
-                if (list_醫囑資料_add.Count > 0) sQLControl_醫囑資料.AddRows(null, list_醫囑資料_add);
-                if (list_醫囑資料_replace.Count > 0) sQLControl_醫囑資料.UpdateByDefulteExtra(null, list_醫囑資料_replace);
+                Task.Run(new Action(delegate 
+                {
+                    if (list_醫囑資料_add.Count > 0) sQLControl_醫囑資料.AddRows(null, list_醫囑資料_add);
+                    if (list_醫囑資料_replace.Count > 0) sQLControl_醫囑資料.UpdateByDefulteExtra(null, list_醫囑資料_replace);
+                }));
+ 
                 returnData.Code = 200;
                 returnData.Result = $"條碼掃描成功! 新增<{list_醫囑資料_add.Count }>筆 修改<{list_醫囑資料_replace.Count}>筆";
                 returnData.Data = orderClasses;
