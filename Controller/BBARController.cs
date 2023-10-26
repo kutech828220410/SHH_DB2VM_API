@@ -63,12 +63,25 @@ namespace DB2VM
             public string 醫囑開始時間 { get; set; }
             [JsonPropertyName("ORDEREND")]
             public string 結方日期 { get; set; }
+            [JsonPropertyName("ODRDATE")]
+            public string 展藥時間 { get; set; }
         }
         static string MySQL_server = $"{ConfigurationManager.AppSettings["MySQL_server"]}";
         static string MySQL_database = $"{ConfigurationManager.AppSettings["MySQL_database"]}";
         static string MySQL_userid = $"{ConfigurationManager.AppSettings["MySQL_user"]}";
         static string MySQL_password = $"{ConfigurationManager.AppSettings["MySQL_password"]}";
         static string MySQL_port = $"{ConfigurationManager.AppSettings["MySQL_port"]}";
+
+        public class Icp_Date : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                DateTime date0 = x.StringToDateTime();
+                DateTime date1 = y.StringToDateTime();
+                return DateTime.Compare(date1, date0);
+
+            }
+        }
 
         [Route("{BarCode}")]
         [HttpGet]
@@ -87,12 +100,52 @@ namespace DB2VM
                 SQLControl sQLControl_醫囑資料 = new SQLControl(MySQL_server, MySQL_database, "order_list", MySQL_userid, MySQL_password, (uint)MySQL_port.StringToInt32(), MySql.Data.MySqlClient.MySqlSslMode.None);
                 string URL = "";
                 string URL_startup = BarCode.Substring(0,1);
-                if(URL_startup == "O" || URL_startup == "E") URL = $"http://10.125.254.212/MedDataAPI/api/GetOpdMed?BARCODE={BarCode}";
-                else URL = $"http://10.125.254.212/MedDataAPI/api/GetIpdMed?BARCODE={BarCode}";
+                if (URL_startup == "O" || URL_startup == "E") URL = $"http://10.125.254.212/MedDataAPI/api/GetOpdMed?BARCODE={BarCode}";
+                else
+                {
+                    URL_startup = "I";
+                    URL = $"http://10.125.254.212/MedDataAPI/api/GetIpdMed?BARCODE={BarCode}";
+                }
                 string json = Net.WEBApiGet(URL);
                 List<BBAR_OPD_Class> bBAR_OPD_Classes = json.JsonDeserializet<List<BBAR_OPD_Class>>();
+                for(int i = 0; i < bBAR_OPD_Classes.Count; i++)
+                {
+                    if(bBAR_OPD_Classes[i].展藥時間.Length == 7)
+                    {
+                        string year = bBAR_OPD_Classes[i].展藥時間.Substring(0, 3);
+                        string month = bBAR_OPD_Classes[i].展藥時間.Substring(3, 2);
+                        string day = bBAR_OPD_Classes[i].展藥時間.Substring(5, 2);
+
+                        year = (year.StringToInt32() + 1911).ToString();
+                        bBAR_OPD_Classes[i].展藥時間 = $"{year}-{month}-{day}";
+                    }
+                    else
+                    {
+                        bBAR_OPD_Classes[i].展藥時間 = "";
+                    }
+                }
                 List<object[]> list_value = bBAR_OPD_Classes.ClassToSQL<BBAR_OPD_Class, enum_醫囑資料>();
 
+                if(URL_startup == "I")
+                {
+                    List<object[]> list_value_buf = new List<object[]>();
+                    list_value_buf = list_value.GetRowsInDate((int)enum_醫囑資料.展藥時間, DateTime.Now);
+                    if (list_value_buf.Count == 0)
+                    {
+                        List<string> dates = (from temp in list_value
+                                              select temp[(int)enum_醫囑資料.展藥時間].ToDateString()).Distinct().ToList();
+                        dates.Sort(new Icp_Date());
+                        if (dates.Count > 0)
+                        {
+                            list_value_buf = list_value.GetRowsInDate((int)enum_醫囑資料.展藥時間, dates[0].StringToDateTime());
+                            list_value = list_value_buf;
+                        }
+                    }
+                    else
+                    {
+                        list_value = list_value_buf;
+                    }
+                }
 
                 List<object[]> list_醫囑資料 = sQLControl_醫囑資料.GetRowsByDefult(null, (int)enum_醫囑資料.藥袋條碼, BarCode);
                 List<object[]> list_醫囑資料_buf = new List<object[]>();
@@ -104,6 +157,7 @@ namespace DB2VM
                     string 頻次 = list_value[i][(int)enum_醫囑資料.頻次].ObjectToString();
                     string 開方日期 = list_value[i][(int)enum_醫囑資料.開方日期].ObjectToString();
                     string str_交易量 = list_value[i][(int)enum_醫囑資料.交易量].ObjectToString();
+                    string 展藥時間 = list_value[i][(int)enum_醫囑資料.展藥時間].ToDateString();
 
                     string PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}-{i}";
                     double temp0 = -1;
@@ -132,6 +186,7 @@ namespace DB2VM
 
                         list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
                         list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
+                        list_value[i][(int)enum_醫囑資料.展藥時間] = 展藥時間;
 
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
                         list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
