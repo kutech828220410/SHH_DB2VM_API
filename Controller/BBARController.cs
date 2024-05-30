@@ -158,8 +158,15 @@ namespace DB2VM
                     string 開方日期 = list_value[i][(int)enum_醫囑資料.開方日期].ObjectToString();
                     string str_交易量 = list_value[i][(int)enum_醫囑資料.交易量].ObjectToString();
                     string 展藥時間 = list_value[i][(int)enum_醫囑資料.展藥時間].ToDateString();
-
-                    string PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}-{i}";
+                    if(展藥時間.StringIsEmpty())
+                    {
+                        展藥時間 = DateTime.MinValue.ToDateTimeString();
+                    }
+                    string PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}";
+                    if(URL_startup == "I")
+                    {
+                        PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}{展藥時間}";
+                    }
                     double temp0 = -1;
                     if (double.TryParse(str_交易量, out temp0) == false) continue;
 
@@ -167,7 +174,7 @@ namespace DB2VM
                     list_value[i][(int)enum_醫囑資料.產出時間] = DateTime.Now.ToDateTimeString();
                     list_value[i][(int)enum_醫囑資料.過帳時間] = DateTime.MinValue.ToDateTimeString();
                     list_醫囑資料_buf = (from temp in list_醫囑資料
-                                     where temp[(int)enum_醫囑資料.PRI_KEY].ObjectToString() == PRI_KEY
+                                     where temp[(int)enum_醫囑資料.PRI_KEY].ObjectToString().Contains(PRI_KEY)
                                      select temp).ToList();
                     if (list_醫囑資料_buf.Count == 0)
                     {
@@ -176,6 +183,7 @@ namespace DB2VM
                         list_value[i][(int)enum_醫囑資料.狀態] = enum_醫囑資料_狀態.未過帳.GetEnumName();
                         list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
+                        list_value[i][(int)enum_醫囑資料.展藥時間] = 展藥時間;
                         list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
                         list_醫囑資料_add.Add(list_value[i]);
                     }
@@ -187,7 +195,6 @@ namespace DB2VM
                         list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
                         list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
                         list_value[i][(int)enum_醫囑資料.展藥時間] = 展藥時間;
-
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
                         list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
                         list_醫囑資料_replace.Add(list_value[i]);
