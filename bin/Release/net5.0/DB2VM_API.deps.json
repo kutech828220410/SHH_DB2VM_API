@@ -839,6 +839,62 @@
           }
         }
       },
+      "System.Management/4.0.0.0": {
+        "runtime": {
+          "System.Management.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "4.6.1055.0"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.0.0": {
+        "runtime": {
+          "Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.1.25517"
+          }
+        }
+      },
+      "Interop.SpeechLib/5.4.0.0": {
+        "runtime": {
+          "Interop.SpeechLib.dll": {
+            "assemblyVersion": "5.4.0.0",
+            "fileVersion": "5.4.0.0"
+          }
+        }
+      },
+      "H_Pannel_lib/1.0.0.0": {
+        "runtime": {
+          "H_Pannel_lib.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "MyOffice/1.0.0.0": {
+        "runtime": {
+          "MyOffice.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "PopupControl/1.5.0.28608": {
+        "runtime": {
+          "PopupControl.dll": {
+            "assemblyVersion": "1.5.0.28608",
+            "fileVersion": "1.5.0.28608"
+          }
+        }
+      },
+      "SunnyUI/3.6.5.0": {
+        "runtime": {
+          "SunnyUI.dll": {
+            "assemblyVersion": "3.6.5.0",
+            "fileVersion": "3.6.5.0"
+          }
+        }
+      },
       "LadderUI/1.0.0.0": {
         "runtime": {
           "LadderUI.dll": {
@@ -919,6 +975,54 @@
           }
         }
       },
+      "DrawingClass/1.0.0.5": {
+        "runtime": {
+          "DrawingClass.dll": {
+            "assemblyVersion": "1.0.0.5",
+            "fileVersion": "1.0.0.5"
+          }
+        }
+      },
+      "zxing/0.16.6.0": {
+        "runtime": {
+          "zxing.dll": {
+            "assemblyVersion": "0.16.6.0",
+            "fileVersion": "0.16.6.0"
+          }
+        }
+      },
+      "NPOI/2.4.1.0": {
+        "runtime": {
+          "NPOI.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          }
+        }
+      },
+      "Microsoft.Office.Interop.Excel/15.0.0.0": {
+        "runtime": {
+          "Microsoft.Office.Interop.Excel.dll": {
+            "assemblyVersion": "15.0.0.0",
+            "fileVersion": "15.0.4569.1506"
+          }
+        }
+      },
+      "NPOI.OOXML/2.4.1.0": {
+        "runtime": {
+          "NPOI.OOXML.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          }
+        }
+      },
+      "SunnyUI.Common/3.6.5.0": {
+        "runtime": {
+          "SunnyUI.Common.dll": {
+            "assemblyVersion": "3.6.5.0",
+            "fileVersion": "3.6.5.0"
+          }
+        }
+      },
       "TCP/1.0.0.0": {
         "runtime": {
           "TCP.dll": {
@@ -935,11 +1039,11 @@
           }
         }
       },
-      "DrawingClass/1.0.0.5": {
+      "MeasureSystemFunction/1.0.0.0": {
         "runtime": {
-          "DrawingClass.dll": {
-            "assemblyVersion": "1.0.0.5",
-            "fileVersion": "1.0.0.5"
+          "MeasureSystemFunction.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
           }
         }
       },
@@ -948,6 +1052,38 @@
           "MVSDK.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ICSharpCode.SharpZipLib/1.0.0.999": {
+        "runtime": {
+          "ICSharpCode.SharpZipLib.dll": {
+            "assemblyVersion": "1.0.0.999",
+            "fileVersion": "1.0.0.999"
+          }
+        }
+      },
+      "office/15.0.0.0": {
+        "runtime": {
+          "office.dll": {
+            "assemblyVersion": "15.0.0.0",
+            "fileVersion": "15.0.4613.1000"
+          }
+        }
+      },
+      "NPOI.OpenXml4Net/2.4.1.0": {
+        "runtime": {
+          "NPOI.OpenXml4Net.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
+          }
+        }
+      },
+      "NPOI.OpenXmlFormats/2.4.1.0": {
+        "runtime": {
+          "NPOI.OpenXmlFormats.dll": {
+            "assemblyVersion": "2.4.1.0",
+            "fileVersion": "2.4.1.0"
           }
         }
       },
@@ -2838,6 +2974,41 @@
       "serviceable": false,
       "sha512": ""
     },
+    "System.Management/4.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Newtonsoft.Json/13.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Interop.SpeechLib/5.4.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "H_Pannel_lib/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "MyOffice/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "PopupControl/1.5.0.28608": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunnyUI/3.6.5.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
     "LadderUI/1.0.0.0": {
       "type": "reference",
       "serviceable": false,
@@ -2888,6 +3059,36 @@
       "serviceable": false,
       "sha512": ""
     },
+    "DrawingClass/1.0.0.5": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "zxing/0.16.6.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NPOI/2.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Office.Interop.Excel/15.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NPOI.OOXML/2.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SunnyUI.Common/3.6.5.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
     "TCP/1.0.0.0": {
       "type": "reference",
       "serviceable": false,
@@ -2898,12 +3099,32 @@
       "serviceable": false,
       "sha512": ""
     },
-    "DrawingClass/1.0.0.5": {
+    "MeasureSystemFunction/1.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
     "MVSDK/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ICSharpCode.SharpZipLib/1.0.0.999": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "office/15.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NPOI.OpenXml4Net/2.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NPOI.OpenXmlFormats/2.4.1.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

@@ -82,11 +82,21 @@ namespace DB2VM
 
             }
         }
-
         [Route("{BarCode}")]
         [HttpGet]
         public string Get(string? BarCode)
         {
+            //if (BarCode.Substring(BarCode.Length - 5, 5).StringIsInt32() == false)
+            //{
+            //    BarCode = BarCode.Substring(0, 11);
+            //}
+            return Get_Code(BarCode , "BarCode");
+        }
+        [Route("code/{BarCode}")]
+        [HttpGet]
+        public string Get_Code(string? BarCode ,string? IsCodeMode)
+        {
+            BarCode = BarCode.Trim();
             returnData returnData = new returnData();
             returnData.Method = "OPD/{BarCode}";
             if (BarCode.StringIsEmpty())
@@ -97,6 +107,23 @@ namespace DB2VM
             }
             try
             {
+                string code = "";
+                BarCode = BarCode.Split(' ')[0].Trim();
+                if (IsCodeMode.StringIsEmpty() == true)
+                {
+                     BarCode = BarCode.Split(' ')[0].Trim();
+
+                    //if (BarCode.Substring(BarCode.Length - 5, 5).StringIsInt32() == false && BarCode.Length > 11)
+                    //{
+                    //    code = BarCode.Substring(11, BarCode.Length - 11);
+                    //}
+                }
+                //if (BarCode.Length >= 11)
+                //{
+                //    code = BarCode.Substring(11, BarCode.Length - 11);
+                //}
+
+
                 SQLControl sQLControl_醫囑資料 = new SQLControl(MySQL_server, MySQL_database, "order_list", MySQL_userid, MySQL_password, (uint)MySQL_port.StringToInt32(), MySql.Data.MySqlClient.MySqlSslMode.None);
                 string URL = "";
                 string URL_startup = BarCode.Substring(0,1);
@@ -146,11 +173,24 @@ namespace DB2VM
                         list_value = list_value_buf;
                     }
                 }
-
+                
                 List<object[]> list_醫囑資料 = sQLControl_醫囑資料.GetRowsByDefult(null, (int)enum_醫囑資料.藥袋條碼, BarCode);
                 List<object[]> list_醫囑資料_buf = new List<object[]>();
                 List<object[]> list_醫囑資料_add = new List<object[]>();
                 List<object[]> list_醫囑資料_replace = new List<object[]>();
+                if (URL_startup == "E" && BarCode.Length >= 11)
+                {
+                    code = BarCode.Substring(11, BarCode.Length - 11);
+                    if (code.StringIsEmpty() == false)
+                    {
+                        string result_code = code.Split(' ')[0].Trim();
+                        list_value = list_value.GetRows((int)enum_醫囑資料.藥品碼, result_code);
+                        //orderClasses = orderClasses.Where(item => item.藥品碼 == result_code).ToList();
+                    }
+                }
+                
+ 
+
                 for (int i = 0; i < list_value.Count; i++)
                 {
                     string 藥品碼 = list_value[i][(int)enum_醫囑資料.藥品碼].ObjectToString();
@@ -160,7 +200,7 @@ namespace DB2VM
                     string 展藥時間 = list_value[i][(int)enum_醫囑資料.展藥時間].ToDateString();
                     if(展藥時間.StringIsEmpty())
                     {
-                        展藥時間 = DateTime.MinValue.ToDateTimeString();
+                        展藥時間 = 開方日期;
                     }
                     string PRI_KEY = $"{BarCode}{藥品碼}{頻次}{開方日期}{str_交易量}";
                     if(URL_startup == "I")
@@ -171,8 +211,7 @@ namespace DB2VM
                     if (double.TryParse(str_交易量, out temp0) == false) continue;
 
                     int 交易量 = (int)Math.Ceiling(temp0) * -1;
-                    list_value[i][(int)enum_醫囑資料.產出時間] = DateTime.Now.ToDateTimeString();
-                    list_value[i][(int)enum_醫囑資料.過帳時間] = DateTime.MinValue.ToDateTimeString();
+      
                     list_醫囑資料_buf = (from temp in list_醫囑資料
                                      where temp[(int)enum_醫囑資料.PRI_KEY].ObjectToString().Contains(PRI_KEY)
                                      select temp).ToList();
@@ -185,6 +224,10 @@ namespace DB2VM
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
                         list_value[i][(int)enum_醫囑資料.展藥時間] = 展藥時間;
                         list_value[i][(int)enum_醫囑資料.PRI_KEY] = PRI_KEY;
+                        list_value[i][(int)enum_醫囑資料.產出時間] = DateTime.Now.ToDateTimeString();
+                        list_value[i][(int)enum_醫囑資料.過帳時間] = DateTime.MinValue.ToDateTimeString();
+                        list_value[i][(int)enum_醫囑資料.就醫時間] = DateTime.MinValue.ToDateTimeString();
+
                         list_醫囑資料_add.Add(list_value[i]);
                     }
                     else
@@ -196,17 +239,34 @@ namespace DB2VM
                         list_value[i][(int)enum_醫囑資料.藥袋條碼] = BarCode;
                         list_value[i][(int)enum_醫囑資料.展藥時間] = 展藥時間;
                         list_value[i][(int)enum_醫囑資料.交易量] = 交易量.ToString();
+                        list_value[i][(int)enum_醫囑資料.產出時間] = DateTime.Now.ToDateTimeString();
                         list_value[i][(int)enum_醫囑資料.狀態] = list_醫囑資料_buf[0][(int)enum_醫囑資料.狀態];
+                        if (list_value[i][(int)enum_醫囑資料.過帳時間].ToDateTimeString().StringIsEmpty())
+                        {
+                            list_value[i][(int)enum_醫囑資料.過帳時間] = DateTime.MinValue.ToDateTimeString();
+                        }
+                        if (list_value[i][(int)enum_醫囑資料.就醫時間].ToDateTimeString().StringIsEmpty())
+                        {
+                            list_value[i][(int)enum_醫囑資料.就醫時間] = DateTime.MinValue.ToDateTimeString();
+                        }
+
+
+
                         list_醫囑資料_replace.Add(list_value[i]);
                     }
                 }
                 List<OrderClass> orderClasses = list_value.SQLToClass<OrderClass, enum_醫囑資料>();
-                Task.Run(new Action(delegate 
+
+                
+
+                Task.Run(new Action(delegate
                 {
                     if (list_醫囑資料_add.Count > 0) sQLControl_醫囑資料.AddRows(null, list_醫囑資料_add);
                     if (list_醫囑資料_replace.Count > 0) sQLControl_醫囑資料.UpdateByDefulteExtra(null, list_醫囑資料_replace);
                 }));
- 
+
+                
+
                 returnData.Code = 200;
                 returnData.Result = $"條碼掃描成功! 新增<{list_醫囑資料_add.Count }>筆 修改<{list_醫囑資料_replace.Count}>筆";
                 returnData.Data = orderClasses;
